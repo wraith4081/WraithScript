@@ -31,4 +31,4 @@ jobs:
         run: npm test
 
       - name: Build
-        run: npm run build
+        run: npm install && npm install @types/node --save-dev && npm run build
