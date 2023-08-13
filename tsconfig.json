@@ -4,8 +4,9 @@
     "module": "commonjs",
     "outDir": "dist",
     "strict": true,
-    "esModuleInterop": true
+    "esModuleInterop": true,
+    "types": ["mocha", "node"]
   },
   "include": ["src/**/*.ts", "test/**/*.ts"],
-  "types": ["mocha"]
+  "types": ["mocha", "node"]
 }
