@@ -9,14 +9,18 @@ export default class Environment {
     private variables: Map<string, RuntimeValue>;
     private constants: Set<string>;
 
+    private throwErrors: boolean;
+
     /**
      * Creates a new environment.
      * @param parent - The parent environment, if any.
      */
-    constructor(parent?: Environment) {
+    constructor(parent?: Environment, throwErrors: boolean = false) {
         this.parent = parent;
         this.variables = new Map();
         this.constants = new Set();
+
+        this.throwErrors = throwErrors;
     }
 
     /**
@@ -29,8 +33,14 @@ export default class Environment {
     public declare(name: string, value: RuntimeValue, constant: boolean = true): RuntimeValue {
         // Check if the variable already exists in this scope.
         if (this.variables.has(name)) {
-            console.error(`Cannot redeclare variable ${name}. It already exists in this scope.`);
-            process.exit(1);
+            const err = `Cannot redeclare variable ${name}. It already exists in this scope.`;
+
+            if (this.throwErrors) {
+                throw new Error(err);
+            } else {
+                console.error(err);
+                process.exit(1);
+            }
         }
 
         this.variables.set(name, value);
@@ -54,14 +64,26 @@ export default class Environment {
 
         // Check if the variable exists in any scope.
         if (!environment) {
-            console.error(`Cannot assign to undeclared variable ${name}.`);
-            process.exit(1);
+            const err = `Cannot assign to undeclared variable ${name}.`;
+
+            if (this.throwErrors) {
+                throw new Error(err);
+            } else {
+                console.error(err);
+                process.exit(1);
+            }
         }
 
         // Check if the variable is a constant.
         if (environment.constants.has(name)) {
-            console.error(`Cannot reasign to constant variable ${name}.`);
-            process.exit(1);
+            const err = `Cannot reasign to constant variable ${name}.`;
+
+            if (this.throwErrors) {
+                throw new Error(err);
+            } else {
+                console.error(err);
+                process.exit(1);
+            }
         }
 
         // Check if the type of the variable is changing.
@@ -86,8 +108,14 @@ export default class Environment {
 
         // Check if the variable exists in any scope.
         if (!environment) {
-            console.error(`Variable ${name} is not defined.`);
-            process.exit(1);
+            const err = `Variable ${name} is not defined.`;
+
+            if (this.throwErrors) {
+                throw new Error(err);
+            } else {
+                console.error(err);
+                process.exit(1);
+            }
         }
 
         return environment.variables.get(name)!;
@@ -106,8 +134,14 @@ export default class Environment {
 
         // If the variable doesn't exist in this scope, check the parent scope.
         if (!this.parent) {
-            console.error(`Variable ${name} is not defined.`);
-            process.exit(1);
+            const err = `Variable ${name} is not defined.`;
+
+            if (this.throwErrors) {
+                throw new Error(err);
+            } else {
+                console.error(err);
+                process.exit(1);
+            }
         }
 
         return this.parent.resolve(name);

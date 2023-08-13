@@ -40,7 +40,7 @@ export interface Token {
  * @param type - The type of the token.
  * @returns The new token.
  */
-function token(value: string = "", type: TokenType): Token {
+export function token(value: string = "", type: TokenType): Token {
     return {
         type,
         value,
@@ -52,7 +52,7 @@ function token(value: string = "", type: TokenType): Token {
  * @param char - The character to check.
  * @returns True if the character is an alphabetic character, false otherwise.
  */
-function isAlpha(char: string): boolean {
+export function isAlpha(char: string): boolean {
     return char.toUpperCase() !== char.toLowerCase();
 }
 
@@ -61,7 +61,7 @@ function isAlpha(char: string): boolean {
  * @param char - The character to check.
  * @returns True if the character is an integer character, false otherwise.
  */
-function isInteger(char: string): boolean {
+export function isInteger(char: string): boolean {
     const code = char.charCodeAt(0);
     const bounds = ['0'.charCodeAt(0), '9'.charCodeAt(0)]
 
@@ -73,7 +73,7 @@ function isInteger(char: string): boolean {
  * @param char - The character to check.
  * @returns True if the character is a whitespace character, false otherwise.
  */
-function isSkipable(char: string): boolean {
+export function isSkipable(char: string): boolean {
     return [' ', '\n', '\t'].includes(char);
 }
 
