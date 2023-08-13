@@ -60,10 +60,16 @@ export function evaluateIdentifier(identifier: Identifier, env: Environment): Ru
  * @param env - The environment to use for evaluation.
  * @returns The new value of the variable.
  */
-export function evaluateAssignment(node: AssignmentExpression, env: Environment): RuntimeValue {
+export function evaluateAssignment(node: AssignmentExpression, env: Environment, throwError: boolean = false): RuntimeValue {
     if (node.asignee.kind !== 'Identifier') {
-        console.error('Invalid LHS of assignment expression. Expected identifier.', JSON.stringify(node.asignee));
-        process.exit(1);
+        const err = 'Invalid LHS of assignment expression. Expected identifier.' + JSON.stringify(node.asignee);
+
+        if (throwError) {
+            throw new Error(err);
+        } else {
+            console.error(err);
+            process.exit(1);
+        }
     }
 
     const name = (node.asignee as Identifier).symbol;

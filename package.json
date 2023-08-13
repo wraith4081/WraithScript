@@ -1,0 +1,23 @@
+{
+  "name": "wraithscript",
+  "version": "0.0.1",
+  "description": "A programming language writed with typescript",
+  "main": "src/main.ts",
+  "scripts": {
+    "test": "mocha --require ts-node/register ./src/**/*.test.ts",
+    "build": "tsc -p ./tsconfig.json"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/wraith4081/WraithScript.git"
+  },
+  "author": "Wraith",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/wraith4081/WraithScript/issues"
+  },
+  "homepage": "https://github.com/wraith4081/WraithScript#readme",
+  "devDependencies": {
+    "@types/mocha": "^10.0.1"
+  }
+}

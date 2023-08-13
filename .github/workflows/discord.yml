@@ -1,0 +1,18 @@
+name: "Discord Notification"
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+
+jobs:
+  Actions-For-Discord:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Actions for Discord
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+        uses: Ilshidur/action-discord@master
+        with:
+          content: "There has been a change in the repository"
