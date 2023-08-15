@@ -11,11 +11,15 @@ export enum TokenType {
     Const,
 
     // Grouping / Operators
+    BinaryOperator,
     Equals,
     Semicolon,
-    OpenParentesis,
-    CloseParentesis,
-    BinaryOperator,
+    Comma,
+    Colon,
+    OpenParentesis, // (
+    CloseParentesis, // )
+    OpenBracket, // {
+    CloseBracket, // }
 
     // Misc
     EOF,
@@ -74,7 +78,7 @@ export function isInteger(char: string): boolean {
  * @returns True if the character is a whitespace character, false otherwise.
  */
 export function isSkipable(char: string): boolean {
-    return [' ', '\n', '\t'].includes(char);
+    return [' ', '\n', '\t', '\r'].includes(char);
 }
 
 /**
@@ -91,12 +95,20 @@ export function tokenize(sourceCode: string): Token[] {
             tokens.push(token(src.shift()!, TokenType.OpenParentesis));
         } else if (src[0] === ')') {
             tokens.push(token(src.shift()!, TokenType.CloseParentesis));
+        } else if (src[0] === '{') {
+            tokens.push(token(src.shift()!, TokenType.OpenBracket));
+        } else if (src[0] === '}') {
+            tokens.push(token(src.shift()!, TokenType.CloseBracket));
         } else if (['+', '-', '*', '/', '%'].includes(src[0])) {
             tokens.push(token(src.shift()!, TokenType.BinaryOperator));
         } else if (src[0] === '=') {
             tokens.push(token(src.shift()!, TokenType.Equals));
         } else if (src[0] === ';') {
             tokens.push(token(src.shift()!, TokenType.Semicolon));
+        } else if (src[0] === ':') {
+            tokens.push(token(src.shift()!, TokenType.Colon));
+        } else if (src[0] === ',') {
+            tokens.push(token(src.shift()!, TokenType.Comma));
         } else {
             // Handle multi-char tokens
 

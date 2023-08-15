@@ -8,6 +8,10 @@ export type NodeType =
 
     // EXPRESSIONS
     | "AssignmentExpression"
+
+    // LITERALS
+    | "Property"
+    | "ObjectLiteral"
     | "NumericLiteral"
     | "Identifier"
     | "BinaryExpression";
@@ -75,4 +79,21 @@ export interface Identifier extends Expression {
 export interface NumericLiteral extends Expression {
     kind: "NumericLiteral";
     value: number;
+}
+
+/**
+ * Represents a property in the AST.
+ */
+export interface Property extends Expression {
+    kind: "Property";
+    key: string;
+    value?: Expression;
+}
+
+/**
+ * Represents an object literal in the AST.
+ */
+export interface ObjectLiteral extends Expression {
+    kind: "ObjectLiteral";
+    properties: Property[];
 }

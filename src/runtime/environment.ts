@@ -1,5 +1,21 @@
 import { warn } from "./log";
-import { RuntimeValue } from "./values";
+import { MK_BOOL, MK_NULL, RuntimeValue } from "./values";
+
+/**
+ * Creates a new global environment with pre-defined values for true, false, and null.
+ * @returns The new global environment.
+ */
+export function createGlobalEnvironment() {
+    const env = new Environment();
+
+    Object.entries({
+        'true': MK_BOOL(true),
+        'false': MK_BOOL(false),
+        'null': MK_NULL()
+    }).forEach(key => env.declare(...key));
+
+    return env;
+}
 
 /**
  * Represents an environment for variable and constant declarations.
@@ -21,6 +37,7 @@ export default class Environment {
         this.constants = new Set();
 
         this.throwErrors = throwErrors;
+
     }
 
     /**
