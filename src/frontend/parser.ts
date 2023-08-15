@@ -1,5 +1,5 @@
-import { warn } from '../runtime/log';
-import { Statement, Program, Expression, BinaryExpression, NumericLiteral, Identifier, VariableDeclaration, AssignmentExpression, Property, ObjectLiteral } from './ast';
+import { error, warn } from '../runtime/log';
+import { Statement, Program, Expression, BinaryExpression, NumericLiteral, Identifier, VariableDeclaration, AssignmentExpression, Property, ObjectLiteral, CallExpression, MemberExpression } from './ast';
 import { tokenize, Token, TokenType } from './lexer';
 
 /**
@@ -155,14 +155,14 @@ export default class Parser {
      */
     private parseObjectExpression(): Expression {
 
-        if (this.at().type !== TokenType.OpenBracket) {
+        if (this.at().type !== TokenType.OpenBrace) {
             return this.parseAdditiveExpression();
         }
 
         this.eatToken(); // Advance past the '{'
         const properties = new Array<Property>();
 
-        while (this.notEOF() && this.at().type !== TokenType.CloseBracket) {
+        while (this.notEOF() && this.at().type !== TokenType.CloseBrace) {
             const key = this.except(TokenType.Identifier, "Unexpected token founded inside object expression. Expected identifier").value;
 
             if (this.at().type === TokenType.Comma) {
@@ -173,7 +173,7 @@ export default class Parser {
                 });
 
                 continue;
-            } else if (this.at().type === TokenType.CloseBracket) {
+            } else if (this.at().type === TokenType.CloseBrace) {
                 properties.push({
                     kind: 'Property',
                     key
@@ -190,13 +190,13 @@ export default class Parser {
                 value
             });
 
-            if (this.at().type !== TokenType.CloseBracket) {
+            if (this.at().type !== TokenType.CloseBrace) {
                 this.except(TokenType.Comma, "Unexpected token founded inside object expression. Expected comma");
             }
 
         }
 
-        this.except(TokenType.CloseBracket, "Unexpected token founded inside object expression. Expected closing brace");
+        this.except(TokenType.CloseBrace, "Unexpected token founded inside object expression. Expected closing brace");
         return { kind: "ObjectLiteral", properties } as ObjectLiteral;
     }
 
@@ -227,11 +227,11 @@ export default class Parser {
      * @returns The parsed multiplicative expression.
      */
     private parseMultiplicativeExpression(): Expression {
-        let left = this.parsePrimaryExpression();
+        let left = this.parseCallMemberExpression();
 
         while (['/', '*', '%'].includes(this.at().value)) {
             const operator = this.eatToken().value;
-            const right = this.parsePrimaryExpression();
+            const right = this.parseCallMemberExpression();
 
             left = {
                 kind: 'BinaryExpression',
@@ -242,6 +242,82 @@ export default class Parser {
         }
 
         return left;
+    }
+
+    private parseCallMemberExpression(): Expression {
+        const member = this.parseMemberExpression();
+
+        if (this.at().type === TokenType.OpenParentesis) {
+            return this.parseCallExpression(member);
+        }
+
+        return member;
+    }
+
+    private parseCallExpression(caller: Expression): Expression {
+        let callerExpression = {
+            kind: 'CallExpression',
+            caller,
+            args: this.parseArguments()
+        } as CallExpression;
+
+        if (this.at().type === TokenType.OpenParentesis) {
+            callerExpression = this.parseCallExpression(callerExpression) as CallExpression;
+        }
+
+        return callerExpression;
+    }
+
+    private parseArguments(): Expression[] {
+        this.except(TokenType.OpenParentesis, "Unexpected token founded inside arguments list. Expected opening parentesis");
+
+        const args = this.at().type === TokenType.CloseParentesis ? [] : this.parseArgumentsList();
+
+        this.except(TokenType.CloseParentesis, "Unexpected token founded inside arguments list. Expected closing parentesis");
+
+        return args;
+    }
+
+    private parseArgumentsList(): Expression[] {
+        const args = [this.parseAssignmentExpression()];
+
+        while (this.notEOF() && this.at().type === TokenType.Comma) {
+            this.eatToken();
+            args.push(this.parseAssignmentExpression());
+        }
+
+        return args;
+    }
+
+    private parseMemberExpression(): Expression {
+        let object: Expression = this.parsePrimaryExpression();
+
+        while ([TokenType.Dot, TokenType.OpenBracket].includes(this.at().type)) {
+            const operator = this.eatToken();
+            let property: Expression;
+            let computed = operator.type !== TokenType.Dot;
+
+            if (operator.type === TokenType.Dot) {
+                property = this.parsePrimaryExpression();
+
+                if (property.kind !== 'Identifier') {
+                    error("Cannot use a non-identifier as a property name");
+                    process.exit(1);
+                }
+            } else {
+                property = this.parseExpression();
+                this.except(TokenType.CloseBracket, "Unexpected token founded inside member expression. Expected closing bracket");
+            }
+
+            object = {
+                kind: 'MemberExpression',
+                object,
+                property,
+                computed
+            } as Expression;
+        }
+
+        return object;
     }
 
     /**
