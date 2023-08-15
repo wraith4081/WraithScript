@@ -1,8 +1,15 @@
-import { AssignmentExpression, BinaryExpression, Identifier } from "../../frontend/ast";
+import { AssignmentExpression, BinaryExpression, Identifier, ObjectLiteral } from "../../frontend/ast";
 import Environment from "../environment";
 import { evaluate } from "../interpreter";
-import { MK_NULL, NumberValue, RuntimeValue } from "../values";
+import { MK_NULL, NumberValue, ObjectValue, RuntimeValue } from "../values";
 
+/**
+ * Evaluates a binary expression with two numeric operands and returns a numeric value.
+ * @param lhs The left-hand side operand of the binary expression.
+ * @param rhs The right-hand side operand of the binary expression.
+ * @param operator The operator used in the binary expression.
+ * @returns The numeric value resulting from the binary expression.
+ */
 function evaluateNumericBinaryExpression(lhs: NumberValue, rhs: NumberValue, operator: string): NumberValue {
     let value: number = 0;
 
@@ -74,4 +81,23 @@ export function evaluateAssignment(node: AssignmentExpression, env: Environment,
 
     const name = (node.asignee as Identifier).symbol;
     return env.assign(name, evaluate(node.value, env));
+}
+
+/**
+ * Evaluates an object literal expression and returns an object value.
+ * @param node The object literal AST node to evaluate.
+ * @param env The environment in which to evaluate the expression.
+ * @returns The object value represented by the object literal.
+ */
+export function evaluateObjectExpression(node: ObjectLiteral, env: Environment): RuntimeValue {
+    const object = { type: "object", properties: new Map() } as ObjectValue;
+
+    for (let { key, value } of node.properties) {
+
+        const runtimeValue = (value === undefined) ? env.lookup(key) : evaluate(value, env);
+
+        object.properties.set(key, runtimeValue);
+    }
+
+    return object;
 }

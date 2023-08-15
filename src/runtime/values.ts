@@ -1,7 +1,7 @@
 /**
  * The possible value types.
  */
-export type ValueType = "null" | "number" | "boolean";
+export type ValueType = "null" | "number" | "boolean" | "object";
 
 /**
  * The interface for a runtime value.
@@ -53,3 +53,11 @@ export interface NumberValue extends RuntimeValue {
  * @returns The number value.
  */
 export const MK_NUMBER = (value: number = 0) => ({ type: "number", value }) as NumberValue;
+
+/**
+ * The interface for an object value.
+ */
+export interface ObjectValue extends RuntimeValue {
+    type: "object";
+    properties: Map<string, RuntimeValue>;
+}

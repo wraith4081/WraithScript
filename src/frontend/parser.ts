@@ -1,5 +1,5 @@
 import { warn } from '../runtime/log';
-import { Statement, Program, Expression, BinaryExpression, NumericLiteral, Identifier, VariableDeclaration, AssignmentExpression } from './ast';
+import { Statement, Program, Expression, BinaryExpression, NumericLiteral, Identifier, VariableDeclaration, AssignmentExpression, Property, ObjectLiteral } from './ast';
 import { tokenize, Token, TokenType } from './lexer';
 
 /**
@@ -133,7 +133,7 @@ export default class Parser {
      * @returns The parsed assignment expression.
      */
     private parseAssignmentExpression(): Expression {
-        const left = this.parseAdditiveExpression(); // TODO: Switch this into ObjectExpression
+        const left = this.parseObjectExpression(); // TODO: Switch this into ObjectExpression
 
         if (this.at().type === TokenType.Equals) {
             this.eatToken(); // Advance past the '='
@@ -146,6 +146,58 @@ export default class Parser {
         }
 
         return left;
+    }
+
+    /**
+     * Parses an object literal expression and returns an AST node representing the expression.
+     * @returns The AST node representing the object literal expression.
+     * @throws If an unexpected token is encountered while parsing the expression.
+     */
+    private parseObjectExpression(): Expression {
+
+        if (this.at().type !== TokenType.OpenBracket) {
+            return this.parseAdditiveExpression();
+        }
+
+        this.eatToken(); // Advance past the '{'
+        const properties = new Array<Property>();
+
+        while (this.notEOF() && this.at().type !== TokenType.CloseBracket) {
+            const key = this.except(TokenType.Identifier, "Unexpected token founded inside object expression. Expected identifier").value;
+
+            if (this.at().type === TokenType.Comma) {
+                this.eatToken();
+                properties.push({
+                    kind: 'Property',
+                    key
+                });
+
+                continue;
+            } else if (this.at().type === TokenType.CloseBracket) {
+                properties.push({
+                    kind: 'Property',
+                    key
+                });
+                break;
+            }
+
+            this.except(TokenType.Colon, "Unexpected token founded inside object expression. Expected colon");
+            const value = this.parseExpression();
+
+            properties.push({
+                kind: 'Property',
+                key,
+                value
+            });
+
+            if (this.at().type !== TokenType.CloseBracket) {
+                this.except(TokenType.Comma, "Unexpected token founded inside object expression. Expected comma");
+            }
+
+        }
+
+        this.except(TokenType.CloseBracket, "Unexpected token founded inside object expression. Expected closing brace");
+        return { kind: "ObjectLiteral", properties } as ObjectLiteral;
     }
 
     /**

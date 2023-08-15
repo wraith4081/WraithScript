@@ -1,30 +1,19 @@
 import { createInterface } from 'node:readline/promises';
 import { stdin as input, stdout as output } from 'node:process';
+import fs from 'fs';
 
 // Create a readline interface for user input/output.
 const rl = createInterface({ input, output });
 
 import Parser from "./frontend/parser";
 import { evaluate } from './runtime/interpreter';
-import Environment from './runtime/environment';
-import { MK_NULL, MK_NUMBER, MK_BOOL } from './runtime/values';
-
-// Define some initial values for the environment
-const environments = {
-    'x': MK_NUMBER(31),
-    'true': MK_BOOL(true),
-    'false': MK_BOOL(false),
-    'null': MK_NULL()
-};
+import { createGlobalEnvironment } from './runtime/environment';
 
 // Define an async function for the REPL
-!(async function repl() {
+async function repl() {
     // Create a new parser and environment for each loop
     const parser = new Parser();
-    const env = new Environment();
-
-    // Declare the initial environment values
-    Object.entries(environments).forEach(key => env.declare(...key));
+    const env = createGlobalEnvironment();
 
     // Print a welcome message
     console.log(`\nWraithScript REPL v0.0.1dev`);
@@ -47,4 +36,42 @@ const environments = {
         const result = evaluate(program, env);
         console.log(result);
     }
-})();
+}
+
+/**
+ * Runs a WraithScript file.
+ * @param filename The path to the file to run.
+ */
+async function run(filename: string) {
+    const parser = new Parser();
+    const env = createGlobalEnvironment();
+
+    // Read the file
+    const file = fs.readFileSync(filename, 'utf-8');
+
+    // Parse the file into an AST
+    const program = parser.produceAST(file);
+
+    // Evaluate the AST and print the result
+    const result = evaluate(program, env);
+    console.log(result);
+
+    // Exit with a status code of 0
+    process.exit(0);
+}
+
+/**
+ * Parses command-line arguments and runs the appropriate command.
+ */
+function main(): void {
+    if (process.argv.length === 2) {
+        repl();
+    } else if (process.argv.length === 3) {
+        run(process.argv[2]);
+    } else {
+        console.log('Usage: wraithscript [filename]');
+        process.exit(1);
+    }
+}
+
+main();
