@@ -106,8 +106,27 @@ export function tokenize(sourceCode: string): Token[] {
             tokens.push(token(src.shift()!, TokenType.OpenBracket));
         } else if (src[0] === ']') {
             tokens.push(token(src.shift()!, TokenType.CloseBracket));
-        } else if (['+', '-', '*', '/', '%'].includes(src[0])) {
-            tokens.push(token(src.shift()!, TokenType.BinaryOperator));
+        } else if (['+', '-', '*', '/', '%', '&', '|', '^', '~', '<', '>'].includes(src[0])) {
+
+            if (
+                src[0] === '<' &&
+                src[1] === '<'
+            ) {
+                tokens.push(token(src.shift()! + src.shift()!, TokenType.BinaryOperator));
+            } else if (
+                src[0] === '>' &&
+                src[1] === '>'
+            ) {
+                if (
+                    src[2] === '>'
+                ) {
+                    tokens.push(token(src.shift()! + src.shift()! + src.shift()!, TokenType.BinaryOperator));
+                } else {
+                    tokens.push(token(src.shift()! + src.shift()!, TokenType.BinaryOperator));
+                }
+            } else {
+                tokens.push(token(src.shift()!, TokenType.BinaryOperator));
+            }
         } else if (src[0] === '=') {
             tokens.push(token(src.shift()!, TokenType.Equals));
         } else if (src[0] === ';') {

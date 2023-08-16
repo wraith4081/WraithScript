@@ -54,7 +54,7 @@ async function run(filename: string) {
 
     // Evaluate the AST and print the result
     const result = evaluate(program, env);
-    console.log(result);
+    // console.log(result);
 
     // Exit with a status code of 0
     process.exit(0);

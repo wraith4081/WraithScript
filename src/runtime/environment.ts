@@ -1,6 +1,15 @@
-import { warn } from "./log";
-import { MK_BOOL, MK_NULL, RuntimeValue } from "./values";
+import {
+    floor, ceil, round, abs, acos, acosh, asin, asinh,
+    atan, atanh, cbrt, clztt, cos, cosh, exp, expm,
+    fround, log, logten, logonep, logtwo, hypot, sign, sin,
+    sinh, sqrt, tan, tanh, trunc, /*potwo,*/ imul, pow,
+    max, min, random, listmax, listmin, sum, avg,
 
+    Euler, LNTEN, LNTWO, LOGTWOE,
+    LOGTENE, PI, SQRTONETWO, SQRTTWO
+} from "./functions/math";
+import { warn } from "./log";
+import { MK_BOOL, MK_NATIVE_FUNCTION, MK_NULL, MK_NUMBER, NumberValue, RuntimeValue } from "./values";
 /**
  * Creates a new global environment with pre-defined values for true, false, and null.
  * @returns The new global environment.
@@ -11,8 +20,25 @@ export function createGlobalEnvironment() {
     Object.entries({
         'true': MK_BOOL(true),
         'false': MK_BOOL(false),
-        'null': MK_NULL()
-    }).forEach(key => env.declare(...key));
+        'null': MK_NULL(),
+
+        'print': MK_NATIVE_FUNCTION((args, scope) => {
+
+            console.log(...args);
+
+            return MK_NULL();
+        }),
+
+        floor, ceil, round, abs, acos, acosh, asin, asinh,
+        atan, atanh, cbrt, clztt, cos, cosh, exp, expm,
+        fround, log, logten, logonep, logtwo, hypot, sign, sin,
+        sinh, sqrt, tan, tanh, trunc, /*potwo,*/ imul, pow,
+        max, min, random, listmax, listmin, sum, avg,
+
+        Euler, LNTEN, LNTWO, LOGTENE,
+        LOGTWOE, PI, SQRTONETWO, SQRTTWO
+
+    }).forEach(key => env.declare(...key as [any, any]));
 
     return env;
 }

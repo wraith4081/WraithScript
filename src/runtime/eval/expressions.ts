@@ -1,7 +1,8 @@
-import { AssignmentExpression, BinaryExpression, Identifier, ObjectLiteral } from "../../frontend/ast";
+import { AssignmentExpression, BinaryExpression, CallExpression, Identifier, ObjectLiteral } from "../../frontend/ast";
 import Environment from "../environment";
 import { evaluate } from "../interpreter";
-import { MK_NULL, NumberValue, ObjectValue, RuntimeValue } from "../values";
+import { error } from "../log";
+import { MK_NULL, NativeFunctionValue, NumberValue, ObjectValue, RuntimeValue } from "../values";
 
 /**
  * Evaluates a binary expression with two numeric operands and returns a numeric value.
@@ -19,6 +20,13 @@ function evaluateNumericBinaryExpression(lhs: NumberValue, rhs: NumberValue, ope
         case '*': value = lhs.value * rhs.value; break;
         case '/': value = lhs.value / rhs.value; break;
         case '%': value = lhs.value % rhs.value; break;
+        case '&': value = lhs.value & rhs.value; break;
+        case '|': value = lhs.value | rhs.value; break;
+        case '^': value = lhs.value ^ rhs.value; break;
+        // case '~': value = ~lhs.value; break;
+        case '<<': value = lhs.value << rhs.value; break;
+        case '>>': value = lhs.value >> rhs.value; break;
+        case '>>>': value = lhs.value >>> rhs.value; break;
         default: {
             console.error('This binary operator has not yet been setup for interplation.', operator);
             process.exit(1);
@@ -100,4 +108,28 @@ export function evaluateObjectExpression(node: ObjectLiteral, env: Environment):
     }
 
     return object;
+}
+
+/**
+ * Evaluates a function call expression.
+ * @param expr The expression to evaluate.
+ * @param env The environment in which to evaluate the expression.
+ * @returns The result of the function call.
+ * @throws An error if the function is not a native function.
+ */
+export function evaluateCallExpression(
+    expr: CallExpression,
+    env: Environment
+) {
+    const args = expr.args.map(arg => evaluate(arg, env));
+    const fn = evaluate(expr.caller, env) as NativeFunctionValue;
+
+    if (fn.type !== "native-function") {
+        error(`Cannot call non-function value. Got "${fn.type}" instead.`);
+        process.exit(1);
+    }
+
+    const result = fn?.call?.(args, env);
+
+    return result
 }
