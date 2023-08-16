@@ -1,8 +1,8 @@
 import { RuntimeValue } from './values';
-import { AssignmentExpression, BinaryExpression, Identifier, NumericLiteral, ObjectLiteral, Program, Statement, VariableDeclaration } from '../frontend/ast';
+import { AssignmentExpression, BinaryExpression, CallExpression, Identifier, NumericLiteral, ObjectLiteral, Program, Statement, VariableDeclaration } from '../frontend/ast';
 import Environment from './environment';
 import { evaluateProgram, evaluateVariableDeclaration } from './eval/statements';
-import { evaluateAssignment, evaluateBinaryExpression, evaluateIdentifier, evaluateObjectExpression } from './eval/expressions';
+import { evaluateAssignment, evaluateBinaryExpression, evaluateCallExpression, evaluateIdentifier, evaluateObjectExpression } from './eval/expressions';
 
 /**
  * Evaluates an AST node and returns a runtime value.
@@ -28,6 +28,10 @@ export function evaluate(ast: Statement, env: Environment): RuntimeValue {
         case 'ObjectLiteral':
             // Evaluate an object literal
             return evaluateObjectExpression(ast as ObjectLiteral, env);
+
+        case 'CallExpression':
+            // Evaluate an function call literal
+            return evaluateCallExpression(ast as CallExpression, env);
 
         case 'AssignmentExpression':
             // Evaluate an assignment expression

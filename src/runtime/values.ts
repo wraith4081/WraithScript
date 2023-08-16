@@ -1,7 +1,9 @@
+import Environment from "./environment";
+
 /**
  * The possible value types.
  */
-export type ValueType = "null" | "number" | "boolean" | "object";
+export type ValueType = "null" | "number" | "boolean" | "object" | "native-function";
 
 /**
  * The interface for a runtime value.
@@ -61,3 +63,32 @@ export interface ObjectValue extends RuntimeValue {
     type: "object";
     properties: Map<string, RuntimeValue>;
 }
+
+/**
+ * The function that is called when the native function is invoked.
+ * @param args The arguments passed to the function.
+ * @param env The environment in which the function is called.
+ * @returns The result of the function call.
+ */
+export type FunctionCall = (args: RuntimeValue[], env: Environment) => RuntimeValue;
+
+/**
+ * A value that represents a native function.
+ */
+export interface NativeFunctionValue extends RuntimeValue {
+    type: "native-function";
+    /**
+     * The function that is called when the native function is invoked.
+     * @param args The arguments passed to the function.
+     * @param env The environment in which the function is called.
+     * @returns The result of the function call.
+     */
+    call: FunctionCall;
+}
+
+/**
+ * Creates a new native function value.
+ * @param call The function that is called when the native function is invoked.
+ * @returns The new native function value.
+ */
+export const MK_NATIVE_FUNCTION = (call: FunctionCall) => ({ type: "native-function", call }) as NativeFunctionValue;

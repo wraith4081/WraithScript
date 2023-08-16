@@ -133,7 +133,7 @@ export default class Parser {
      * @returns The parsed assignment expression.
      */
     private parseAssignmentExpression(): Expression {
-        const left = this.parseObjectExpression(); // TODO: Switch this into ObjectExpression
+        const left = this.parseObjectExpression();
 
         if (this.at().type === TokenType.Equals) {
             this.eatToken(); // Advance past the '='
@@ -229,7 +229,7 @@ export default class Parser {
     private parseMultiplicativeExpression(): Expression {
         let left = this.parseCallMemberExpression();
 
-        while (['/', '*', '%'].includes(this.at().value)) {
+        while (['-', '+', '/', '*', '%', '&', '|', '^', '~', '<<', '>>', '>>'].includes(this.at().value)) {
             const operator = this.eatToken().value;
             const right = this.parseCallMemberExpression();
 
@@ -244,6 +244,11 @@ export default class Parser {
         return left;
     }
 
+    /**
+     * Parses a member expression, which can be either a property access or an array access.
+     * @returns The parsed expression.
+     * @throws An error if the expression is invalid.
+     */
     private parseCallMemberExpression(): Expression {
         const member = this.parseMemberExpression();
 
@@ -254,6 +259,11 @@ export default class Parser {
         return member;
     }
 
+    /**
+     * Parses a function call expression.
+     * @param caller The expression that represents the function being called.
+     * @returns The parsed expression.
+     */
     private parseCallExpression(caller: Expression): Expression {
         let callerExpression = {
             kind: 'CallExpression',
@@ -268,6 +278,10 @@ export default class Parser {
         return callerExpression;
     }
 
+    /**
+     * Parses a list of function arguments.
+     * @returns An array of parsed argument expressions.
+     */
     private parseArguments(): Expression[] {
         this.except(TokenType.OpenParentesis, "Unexpected token founded inside arguments list. Expected opening parentesis");
 
@@ -278,6 +292,11 @@ export default class Parser {
         return args;
     }
 
+    /**
+     * Parses a member expression, which can be either a property access or an array access.
+     * @returns The parsed expression.
+     * @throws An error if the expression is invalid.
+     */
     private parseArgumentsList(): Expression[] {
         const args = [this.parseAssignmentExpression()];
 
@@ -289,6 +308,11 @@ export default class Parser {
         return args;
     }
 
+    /**
+     * Parses a member expression, which can be either a property access or an array access.
+     * @returns The parsed expression.
+     * @throws An error if the expression is invalid.
+     */
     private parseMemberExpression(): Expression {
         let object: Expression = this.parsePrimaryExpression();
 
